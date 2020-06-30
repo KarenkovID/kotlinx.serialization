@@ -4,13 +4,12 @@
 
 package kotlinx.serialization
 
-import kotlinx.serialization.internal.*
 import kotlinx.serialization.modules.*
 import kotlin.reflect.*
 
 /**
  * This class provides support for retrieving a serializer in runtime, instead of using the one precompiled by the serialization plugin.
- * This serializer is enabled by [ContextualSerialization].
+ * This serializer is enabled by [Contextual].
  *
  * Typical usage of ContextSerializer would be a serialization of a class which does not have
  * static serializer (e.g. Java class or class from 3rd party library);

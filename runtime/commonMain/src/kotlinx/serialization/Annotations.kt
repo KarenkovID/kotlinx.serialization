@@ -75,7 +75,7 @@ public annotation class Serializable(
 /**
  * Instructs the serialization plugin to turn this class into serializer for specified class [forClass].
  * However, it would not be used automatically. To apply it on particular class or property,
- * use [Serializable] or [UseSerializers], or [ContextualSerialization] with runtime registration.
+ * use [Serializable] or [UseSerializers], or [Contextual] with runtime registration.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
@@ -142,9 +142,20 @@ public annotation class SerialInfo
  *
  * @param [forClasses] Classes to use ContextSerializer for in the current file.
  */
+@Deprecated(
+    "This annotation had several meanings and was split in two for readability: use @Contextual on properties and @UseContextualSerialization on files.",
+    ReplaceWith("Contextual"),
+    level = DeprecationLevel.ERROR
+)
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FILE, AnnotationTarget.TYPE)
 @Retention(AnnotationRetention.BINARY)
 public annotation class ContextualSerialization(vararg val forClasses: KClass<*>)
+
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.TYPE)
+public annotation class Contextual
+
+@Target(AnnotationTarget.FILE)
+public annotation class UseContextualSerialization(vararg val forClasses: KClass<*>)
 
 /**
  *  Adds [serializerClasses] to serializers resolving process inside the plugin.
@@ -158,7 +169,7 @@ public annotation class ContextualSerialization(vararg val forClasses: KClass<*>
  *  on each property with custom serializer.
  *
  *  Serializers from this list have higher priority than default, but lesser priority than
- *  serializers defined on the property itself, such as [Serializable] (with=...) or [ContextualSerialization].
+ *  serializers defined on the property itself, such as [Serializable] (with=...) or [Contextual].
  */
 @Target(AnnotationTarget.FILE)
 @Retention(AnnotationRetention.BINARY)

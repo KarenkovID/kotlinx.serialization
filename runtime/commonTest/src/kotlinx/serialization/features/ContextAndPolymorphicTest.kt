@@ -19,7 +19,7 @@ class ContextAndPolymorphicTest {
     @Serializable
     data class EnhancedData(
         val data: Data,
-        @ContextualSerialization val stringPayload: Payload,
+        @Contextual val stringPayload: Payload,
         @Serializable(with = BinaryPayloadSerializer::class) val binaryPayload: Payload
     )
 
@@ -28,7 +28,7 @@ class ContextAndPolymorphicTest {
     data class Payload(val s: String)
 
     @Serializable
-    data class PayloadList(val ps: List<@ContextualSerialization Payload>)
+    data class PayloadList(val ps: List<@Contextual Payload>)
 
     @Serializer(forClass = Payload::class)
     object PayloadSerializer
