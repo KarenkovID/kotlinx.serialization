@@ -151,9 +151,24 @@ public annotation class SerialInfo
 @Retention(AnnotationRetention.BINARY)
 public annotation class ContextualSerialization(vararg val forClasses: KClass<*>)
 
+/**
+ * Instructs the plugin to use [ContextSerializer] on a given property or type.
+ * Context serializer is usually used when serializer for type can only be found in runtime.
+ * It is also possible to apply [ContextSerializer] to every property of the given type,
+ * using file-level [UseContextualSerialization] annotation.
+ *
+ * @see ContextSerializer
+ * @see UseContextualSerialization
+ */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.TYPE)
 public annotation class Contextual
 
+/**
+ * Instructs the plugin to use [ContextSerializer] for every type in the current file that is listed in the [forClasses].
+ *
+ * @see Contextual
+ * @see ContextSerializer
+ */
 @Target(AnnotationTarget.FILE)
 public annotation class UseContextualSerialization(vararg val forClasses: KClass<*>)
 
