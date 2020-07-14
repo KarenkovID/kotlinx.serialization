@@ -94,6 +94,14 @@ apiValidation {
 apply plugin: 'base'
 apply plugin: 'kotlinx-knit'
 
+knit {
+    siteRoot = "https://kotlin.github.io/kotlinx.serialization/"
+    moduleRoots = [".", "formats"]
+}
+
+// Build API docs for all modules with dokka before running Knit
+knitPrepare.dependsOn "dokka"
+
 allprojects {
     group 'org.jetbrains.kotlinx'
 
