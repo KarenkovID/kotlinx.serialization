@@ -1,12 +1,12 @@
 # Kotlin multiplatform / multi-format reflectionless serialization
 
-[![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+[![official JetBrains project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![TeamCity build](https://img.shields.io/teamcity/http/teamcity.jetbrains.com/s/KotlinTools_KotlinxSerialization_Ko.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxSerialization_Ko&guest=1)
-[![Download](https://api.bintray.com/packages/kotlin/kotlinx/kotlinx.serialization.runtime/images/download.svg) ](https://bintray.com/kotlin/kotlinx/kotlinx.serialization.runtime/_latestVersion)
+[![Download](https://api.bintray.com/packages/kotlin/kotlinx/kotlinx.serialization.runtime/images/download.svg?version=0.20.0) ](https://bintray.com/kotlin/kotlinx/kotlinx.serialization.runtime/0.20.0)
 
 Kotlin serialization consists of a compiler plugin, that generates visitor code for serializable classes,
- runtime library with core serialization API and JSON format, and support libraries with ProtoBuf, CBOR and properties formats.
+ runtime libraries with core serialization API and JSON format, and support libraries with ProtoBuf, CBOR and properties formats.
 
 * Supports Kotlin classes marked as `@Serializable` and standard collections.
 * Provides JSON, [CBOR](formats/README.md#CBOR), and [Protobuf](formats/README.md#ProtoBuf) formats.
@@ -44,11 +44,8 @@ import kotlinx.serialization.json.*
 data class Data(val a: Int, val b: String = "42")
 
 fun main() {
-    // Json also has .Default configuration which provides more reasonable settings,
-    // but is subject to change in future versions
-    val json = Json(JsonConfiguration.Stable)
-    // serializing objects
-    val jsonData = json.stringify(Data.serializer(), Data(42))
+    // Serializing objects
+    val jsonData = Json.encodeToString(Data(42))
     // serializing lists
     val jsonList = json.stringify(Data.serializer().list, listOf(Data(42)))
     println(jsonData) // {"a": 42, "b": "42"}
@@ -83,7 +80,7 @@ This document describes setup for Kotlin 1.3 and higher. To watch instructions r
 
 ## Setup
 
-Using Kotlin Serialization requires Kotlin compiler `1.3.30` or higher.
+Using Kotlin Serialization requires Kotlin compiler `1.3.70` or higher.
 Make sure that you have corresponding Kotlin plugin installed in the IDE.
 Since serialization is now bundled into Kotlin plugin, no additional plugins for IDE are required (but make sure you have deleted old additional plugin for 1.2, if you had one).
 Example projects on JVM are available for [Gradle](examples/example-jvm/build.gradle) and [Maven](examples/example-jvm/pom.xml).
