@@ -15,12 +15,15 @@
   * [Constructor properties requirement](#constructor-properties-requirement)
   * [Data validation](#data-validation)
   * [Optional properties](#optional-properties)
+  * [Require properties with default](#require-properties-with-default)
+  * [Transient properties](#transient-properties)
   * [Defaults are encoded](#defaults-are-encoded)
   * [Referenced objects](#referenced-objects)
   * [No compression of repeated references](#no-compression-of-repeated-references)
 * [Custom JSON configuration](#custom-json-configuration)
   * [Pretty printing](#pretty-printing)
   * [Encode defaults](#encode-defaults)
+  * [Ignoring unknown keys](#ignoring-unknown-keys)
 
 <!--- END -->
 
@@ -321,6 +324,64 @@ Repository(name=kotlinx.serialization, language=Kotlin)
 
 <!--- TEST -->
 
+### Require properties with default
+
+A property with a default value can be made required in a serial format with the [Required] annotation.
+If we change the previous example by marking `language` property as `@Required`:
+
+```kotlin
+@Serializable 
+data class Repository(val name: String, @Required val language: String = "Kotlin")
+
+fun main() {
+    val data = Json.decodeFromString<Repository>("""
+        {"name":"kotlinx.serialization"}
+    """)
+    println(data)
+}
+```                                  
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-06.kt).
+
+We'll get the following exception:
+
+```text
+Exception in thread "main" kotlinx.serialization.MissingFieldException: Field 'language' is required, but it was missing
+```   
+
+<!--- TEST LINES_START -->
+
+### Transient properties
+
+A property can be excluded from serialization by marking it with the [Transient] annotation 
+(don't confuse it with [kotlin.jvm.Transient]). Such a property must have a default value
+and attempt to explicitly specify its value in the serial format, even if the specified
+value is equal to the default one: 
+
+```kotlin
+@Serializable 
+data class Repository(val name: String, @Transient val language: String = "Kotlin")
+
+fun main() {
+    val data = Json.decodeFromString<Repository>("""
+        {"name":"kotlinx.serialization","language":"Kotlin"}
+    """)
+    println(data)
+}
+```                                  
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-07.kt).
+
+will produce the following exception:
+
+```text
+Exception in thread "main" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property to ignore unknown keys.
+```   
+
+> 'ignoreUnknownKeys' feature is explained in [Ignoring Unknown Keys section](#ignoring-unknown-keys)
+
+<!--- TEST LINES_START -->
+
 ### Defaults are encoded
 
 Default values are still encoded by default:
@@ -335,7 +396,7 @@ fun main() {
 }
 ```                                  
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-06.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-08.kt).
 
 Produces the following output which has `language` property, even though its value is equal to the default one:
 
@@ -366,7 +427,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-07.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-09.kt).
 
 When encoded to JSON this layout results in a nested JSON object:
 
@@ -396,7 +457,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-08.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-10.kt).
 
 You simply get its value encoded twice:
 
@@ -410,8 +471,10 @@ You simply get its value encoded twice:
 
 A custom JSON configuration can be specified by creating your own [Json] class instance using an existing 
 instance, such as a default `Json` object, and a [Json()] builder function. Additional parameters
-are specified in a block via [JsonBuilder] DSL. This section shows various configuration features 
-that [Json] supports.
+are specified in a block via [JsonBuilder] DSL. The resulting `Json` instance is immutable and thread-safe; it can be 
+simply stored in a top-level property.   
+
+This section shows various configuration features that [Json] supports.
 
 <!--- INCLUDE .*-json-.*
 import kotlinx.serialization.*
@@ -423,11 +486,12 @@ import kotlinx.serialization.json.*
 JSON can be configured to pretty print the output by setting the [prettyPrint][JsonBuilder.prettyPrint] property:
 
 ```kotlin
+val json = Json { prettyPrint = true }
+
 @Serializable 
 data class Repository(val name: String, val language: String)
 
 fun main() {                                      
-    val json = Json { prettyPrint = true }
     val data = Repository("kotlinx.serialization", "Kotlin")
     println(json.encodeToString(data))
 }
@@ -454,15 +518,16 @@ This is especially useful for nullable properties with null defaults to avoid wr
 null values:
 
 ```kotlin
+val json = Json { encodeDefaults = false }
+
 @Serializable 
 class Repository(
     val name: String, 
     val language: String = "Kotlin",
     val website: String? = null
-)
+)           
 
 fun main() {
-    val json = Json { encodeDefaults = false }
     val data = Repository("kotlinx.serialization")
     println(json.encodeToString(data))
 }
@@ -479,10 +544,45 @@ Produces the following output which has only `name` property:
 <!--- TEST -->
 
 
+### Ignoring unknown keys
+
+JSON format is often used to read output of 3rd-party services or in otherwise highly-dynamic environment where
+new properties could be added as a part of API evolution. By default, unknown key during deserialization produces an error. 
+This behavior can be configured with [ignoreUnknownKeys][JsonBuilder.ignoreUnknownKeys] property:
+
+```kotlin
+val json = Json { ignoreUnknownKeys = true }
+
+@Serializable 
+data class Repository(val name: String)
+    
+fun main() {             
+    val data = json.decodeFromString<Repository>("""
+        {"name":"kotlinx.serialization","language":"Kotlin"}
+    """)
+    println(data)
+}
+```                                  
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-json-03.kt).
+
+It decodes the object, despite the fact that it is missing a `language` property:
+ 
+```text
+Repository(name=kotlinx.serialization)
+``` 
+
+<!--- TEST -->
+
+
+
+[kotlin.jvm.Transient]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/
 
 <!--- MODULE /kotlinx-serialization -->
 <!--- INDEX kotlinx.serialization -->
 [Serializable]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-serializable/index.html
+[Required]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-required/index.html
+[Transient]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-transient/index.html
 <!--- INDEX kotlinx.serialization.json -->
 [Json.encodeToString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/encode-to-string.html
 [Json.decodeFromString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/decode-from-string.html
@@ -491,5 +591,6 @@ Produces the following output which has only `name` property:
 [JsonBuilder]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/index.html
 [JsonBuilder.prettyPrint]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/pretty-print.html
 [JsonBuilder.encodeDefaults]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/encode-defaults.html
+[JsonBuilder.ignoreUnknownKeys]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/ignore-unknown-keys.html
 <!--- END -->
 

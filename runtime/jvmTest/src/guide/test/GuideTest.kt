@@ -63,21 +63,35 @@ class GuideTest {
 
     @Test
     fun testExampleClasses06() {
-        captureOutput("ExampleClasses06") { kotlinx.serialization.example.exampleClasses06.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"language\":\"Kotlin\"}"
+        captureOutput("ExampleClasses06") { kotlinx.serialization.example.exampleClasses06.main() }.verifyOutputLinesStart(
+            "Exception in thread \"main\" kotlinx.serialization.MissingFieldException: Field 'language' is required, but it was missing"
         )
     }
 
     @Test
     fun testExampleClasses07() {
-        captureOutput("ExampleClasses07") { kotlinx.serialization.example.exampleClasses07.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"}}"
+        captureOutput("ExampleClasses07") { kotlinx.serialization.example.exampleClasses07.main() }.verifyOutputLinesStart(
+            "Exception in thread \"main\" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property to ignore unknown keys."
         )
     }
 
     @Test
     fun testExampleClasses08() {
         captureOutput("ExampleClasses08") { kotlinx.serialization.example.exampleClasses08.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"language\":\"Kotlin\"}"
+        )
+    }
+
+    @Test
+    fun testExampleClasses09() {
+        captureOutput("ExampleClasses09") { kotlinx.serialization.example.exampleClasses09.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"}}"
+        )
+    }
+
+    @Test
+    fun testExampleClasses10() {
+        captureOutput("ExampleClasses10") { kotlinx.serialization.example.exampleClasses10.main() }.verifyOutputLines(
             "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"},\"maintainer\":{\"name\":\"kotlin\"}}"
         )
     }
@@ -96,6 +110,13 @@ class GuideTest {
     fun testExampleJson02() {
         captureOutput("ExampleJson02") { kotlinx.serialization.example.exampleJson02.main() }.verifyOutputLines(
             "{\"name\":\"kotlinx.serialization\"}"
+        )
+    }
+
+    @Test
+    fun testExampleJson03() {
+        captureOutput("ExampleJson03") { kotlinx.serialization.example.exampleJson03.main() }.verifyOutputLines(
+            "Repository(name=kotlinx.serialization)"
         )
     }
 }
