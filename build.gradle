@@ -95,8 +95,7 @@ apply plugin: 'base'
 apply plugin: 'kotlinx-knit'
 
 knit {
-    siteRoot = "https://kotlin.github.io/kotlinx.serialization/"
-    moduleRoots = [".", "formats"]
+    siteRoot = "https://kotlin.github.io/kotlinx.serialization"
 }
 
 // Build API docs for all modules with dokka before running Knit

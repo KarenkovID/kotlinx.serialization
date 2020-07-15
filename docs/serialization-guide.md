@@ -83,7 +83,7 @@ Exception in thread "main" kotlinx.serialization.SerializationException: Seriali
 
 Serializable classes have to be explicitly marked. Kotlin serialization does not use reflection, 
 so you cannot accidentally deserialize a class which was not supposed to be serializable. Let's fix it by
-adding the `@Serializable` annotation:
+adding the [Serializable] annotation:
 
 ```kotlin
 @Serializable 
@@ -408,8 +408,10 @@ You simply get its value encoded twice:
 
 ## Custom JSON configuration
 
-A custom JSON configuration can be specified by creating your own [Json] class instance and specifying its additional 
-parameters via [JsonBuilder] notation. This section shows various features that [Json] supports.
+A custom JSON configuration can be specified by creating your own [Json] class instance using an existing 
+instance, such as a default `Json` object, and a [Json()] builder function. Additional parameters
+are specified in a block via [JsonBuilder] DSL. This section shows various configuration features 
+that [Json] supports.
 
 <!--- INCLUDE .*-json-.*
 import kotlinx.serialization.*
@@ -418,7 +420,7 @@ import kotlinx.serialization.json.*
 
 ### Pretty printing
 
-JSON can be configured to pretty-print the output:
+JSON can be configured to pretty print the output by setting the [prettyPrint][JsonBuilder.prettyPrint] property:
 
 ```kotlin
 @Serializable 
@@ -447,6 +449,7 @@ It gives the following nice result:
 ### Encode defaults 
 
 Default values of properties don't have to be encoded, because they will be reconstructed during encoding anyway.
+It can be configured by [encodeDefaults][JsonBuilder.encodeDefaults] property.
 This is especially useful for nullable properties with null defaults to avoid writing the corresponding 
 null values:
 
@@ -474,3 +477,19 @@ Produces the following output which has only `name` property:
 ```                 
 
 <!--- TEST -->
+
+
+
+<!--- MODULE /kotlinx-serialization -->
+<!--- INDEX kotlinx.serialization -->
+[Serializable]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-serializable/index.html
+<!--- INDEX kotlinx.serialization.json -->
+[Json.encodeToString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/encode-to-string.html
+[Json.decodeFromString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/decode-from-string.html
+[Json]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/index.html
+[Json()]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json.html
+[JsonBuilder]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/index.html
+[JsonBuilder.prettyPrint]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/pretty-print.html
+[JsonBuilder.encodeDefaults]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/encode-defaults.html
+<!--- END -->
+
