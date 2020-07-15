@@ -97,6 +97,27 @@ class GuideTest {
     }
 
     @Test
+    fun testExampleBuiltin01() {
+        captureOutput("ExampleBuiltin01") { kotlinx.serialization.example.exampleBuiltin01.main() }.verifyOutputLines(
+            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin02() {
+        captureOutput("ExampleBuiltin02") { kotlinx.serialization.example.exampleBuiltin02.main() }.verifyOutputLines(
+            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin03() {
+        captureOutput("ExampleBuiltin03") { kotlinx.serialization.example.exampleBuiltin03.main() }.verifyOutputLines(
+            "Data(a=[42, 42], b=[42])"
+        )
+    }
+
+    @Test
     fun testExampleJson01() {
         captureOutput("ExampleJson01") { kotlinx.serialization.example.exampleJson01.main() }.verifyOutputLines(
             "{",

@@ -20,6 +20,10 @@
   * [Defaults are encoded](#defaults-are-encoded)
   * [Referenced objects](#referenced-objects)
   * [No compression of repeated references](#no-compression-of-repeated-references)
+* [Builtin classes](#builtin-classes)
+  * [Lists](#lists)
+  * [Sets and other collections](#sets-and-other-collections)
+  * [Deserializing collections](#deserializing-collections)
 * [Custom JSON configuration](#custom-json-configuration)
   * [Pretty printing](#pretty-printing)
   * [Encode defaults](#encode-defaults)
@@ -467,6 +471,109 @@ You simply get its value encoded twice:
 
 <!--- TEST -->
 
+## Builtin classes
+
+In addition to all the primitive types and strings, serialization for some classes from the Kotlin standard library, 
+including the standard collections, is built into the Kotlin Serialization. This section covers them.
+
+<!--- INCLUDE .*-builtin-.*
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
+-->
+
+### Lists 
+
+Any [List] of serializable classes can be serialized:
+
+```kotlin
+@Serializable
+class Repository(val name: String)
+
+fun main() {
+    val list = listOf(
+        Repository("kotlinx.serialization"),
+        Repository("kotlinx.coroutines")    
+    )
+    println(Json.encodeToString(list))
+}  
+```
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-01.kt).
+
+The result is represented as a list in JSON:
+
+```text
+[{"name":"kotlinx.serialization"},{"name":"kotlinx.coroutines"}]
+```     
+
+<!--- TEST -->
+
+### Sets and other collections
+
+Other collections, like a [Set], are also serializable:
+
+Any [List] of serializable classes can be serialized:
+
+```kotlin
+@Serializable
+class Repository(val name: String)
+
+fun main() {
+    val set = setOf(
+        Repository("kotlinx.serialization"),
+        Repository("kotlinx.coroutines")    
+    )
+    println(Json.encodeToString(set))
+}  
+```
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-02.kt).
+
+It is also represented as a list in JSON, like all other collections.
+
+```text
+[{"name":"kotlinx.serialization"},{"name":"kotlinx.coroutines"}]
+```     
+
+<!--- TEST -->
+
+### Deserializing collections
+
+During deserialization the type of the resulting object is determined by the static type that was specified
+in the source code &mdash; either as the type of the property or as the type parameter of the decoding function.
+The following example shows how the same JSON list of integers is deserialized into two properties of
+different Kotlin types:
+
+```kotlin             
+@Serializable
+data class Data(
+    val a: List<Int>,
+    val b: Set<Int>
+)
+     
+fun main() {
+    val data = Json.decodeFromString<Data>("""
+        {
+            "a": [42, 42],
+            "b": [42, 42]
+        }
+    """)
+    println(data)
+}
+```    
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-03.kt).
+
+Because `data.b` property is a [Set], the duplicate values from it had disappeared:
+
+```text
+Data(a=[42, 42], b=[42])
+```
+
+<!--- TEST -->
+ 
+
+
 ## Custom JSON configuration
 
 A custom JSON configuration can be specified by creating your own [Json] class instance using an existing 
@@ -576,7 +683,10 @@ Repository(name=kotlinx.serialization)
 
 
 
+<!-- stdlib references -->
 [kotlin.jvm.Transient]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/
+[List]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/ 
+[Set]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/ 
 
 <!--- MODULE /kotlinx-serialization -->
 <!--- INDEX kotlinx.serialization -->
