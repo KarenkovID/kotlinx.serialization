@@ -6,15 +6,14 @@ package kotlinx.serialization.protobuf
 
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.*
-
 import org.junit.Test
 import java.text.*
 import java.util.*
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class PolymorphicWithJvmClassTest {
     @Serializable
-    data class DateWrapper(@ProtoId(1) @Serializable(with = PolymorphicSerializer::class) val date: Date)
+    data class DateWrapper(@ProtoNumber(1) @Serializable(with = PolymorphicSerializer::class) val date: Date)
 
     @Serializer(forClass = Date::class)
     object DateSerializer : KSerializer<Date> {
@@ -36,7 +35,7 @@ class PolymorphicWithJvmClassTest {
 
     @Test
     fun testPolymorphicWrappedOverride() {
-        val protobuf = ProtoBuf(serializersModule = SerializersModule { polymorphic(Date::class, DateSerializer) })
+        val protobuf = ProtoBuf { serializersModule = SerializersModule { polymorphic(Date::class, DateSerializer) } }
         val obj = DateWrapper(Date())
         val bytes = protobuf.encodeToHexString(obj)
         val restored = protobuf.decodeFromHexString<DateWrapper>(bytes)

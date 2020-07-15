@@ -125,7 +125,7 @@ public class SerialDescriptorBuilder internal constructor(
      * ```
      * class Data(
      *     val intField: Int? = null, // Optional, has default value
-     *     @ProtoId(1) val longField: Long
+     *     @ProtoNumber(1) val longField: Long
      * )
      *
      * // Corresponding descriptor
