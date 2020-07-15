@@ -480,10 +480,6 @@ public final class kotlinx/serialization/UpdateMode : java/lang/Enum {
 	public static fun values ()[Lkotlinx/serialization/UpdateMode;
 }
 
-public final class kotlinx/serialization/UpdateNotSupportedException : kotlinx/serialization/SerializationException {
-	public fun <init> (Ljava/lang/String;)V
-}
-
 public abstract interface annotation class kotlinx/serialization/UseContextualSerialization : java/lang/annotation/Annotation {
 	public abstract fun forClasses ()[Ljava/lang/Class;
 }
