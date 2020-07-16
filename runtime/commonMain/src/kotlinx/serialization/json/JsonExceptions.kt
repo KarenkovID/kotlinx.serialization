@@ -29,19 +29,19 @@ internal fun JsonDecodingException(offset: Int, message: String, input: String) 
 
 internal fun InvalidFloatingPoint(value: Number, type: String, output: String) = JsonEncodingException(
     "'$value' is not a valid '$type' as per JSON specification. " +
-            "You can enable 'serializeSpecialFloatingPointValues' property to serialize such values\n" +
+            "You can enable 'serializeSpecialFloatingPointValues' property in 'Json {}' builder to serialize such values.\n" +
             "Current output: ${output.minify()}"
 )
 
 internal fun InvalidFloatingPoint(value: Number, key: String, type: String, output: String) = JsonEncodingException(
     "'$value' with key '$key' is not a valid $type as per JSON specification. " +
-            "You can enable 'serializeSpecialFloatingPointValues' property to serialize such values.\n" +
+            "You can enable 'serializeSpecialFloatingPointValues' property in 'Json {}' builder to serialize such values.\n" +
             "Current output: ${output.minify()}"
 )
 
 internal fun UnknownKeyException(key: String, input: String) = JsonDecodingException(
     -1,
-    "JSON encountered unknown key: '$key'. You can enable 'JsonConfiguration.ignoreUnknownKeys' property to ignore unknown keys.\n" +
+    "JSON encountered unknown key: '$key'. You can enable 'ignoreUnknownKeys' property in 'Json {}' builder to ignore unknown keys.\n" +
             " JSON input: ${input.minify()}"
 )
 

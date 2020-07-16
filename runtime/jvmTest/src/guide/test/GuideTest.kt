@@ -85,20 +85,34 @@ class GuideTest {
     @Test
     fun testExampleClasses10() {
         captureOutput("ExampleClasses10") { kotlinx.serialization.example.exampleClasses10.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"}}"
+            "{\"name\":\"kotlinx.serialization\",\"renamedTo\":null}"
         )
     }
 
     @Test
     fun testExampleClasses11() {
-        captureOutput("ExampleClasses11") { kotlinx.serialization.example.exampleClasses11.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"},\"maintainer\":{\"name\":\"kotlin\"}}"
+        captureOutput("ExampleClasses11") { kotlinx.serialization.example.exampleClasses11.main() }.verifyOutputLinesStart(
+            "Exception in thread \"main\" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 52: Expected string literal but 'null' literal was found. Use 'coerceInputValues = true' property in 'Json {}` builder to coerce nulls to default values."
         )
     }
 
     @Test
     fun testExampleClasses12() {
         captureOutput("ExampleClasses12") { kotlinx.serialization.example.exampleClasses12.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"}}"
+        )
+    }
+
+    @Test
+    fun testExampleClasses13() {
+        captureOutput("ExampleClasses13") { kotlinx.serialization.example.exampleClasses13.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"},\"maintainer\":{\"name\":\"kotlin\"}}"
+        )
+    }
+
+    @Test
+    fun testExampleClasses14() {
+        captureOutput("ExampleClasses14") { kotlinx.serialization.example.exampleClasses14.main() }.verifyOutputLines(
             "{\"name\":\"kotlinx.serialization\",\"lang\":\"Kotlin\"}"
         )
     }
@@ -112,43 +126,43 @@ class GuideTest {
 
     @Test
     fun testExampleBuiltin02() {
-        captureOutput("ExampleBuiltin02") { kotlinx.serialization.example.exampleBuiltin02.main() }.verifyOutputLines(
-            "{\"signature\":2067120338512882656}"
+        captureOutput("ExampleBuiltin02") { kotlinx.serialization.example.exampleBuiltin02.main() }.verifyOutputLinesStart(
+            "Exception in thread \"main\" kotlinx.serialization.json.JsonEncodingException: 'NaN' is not a valid 'double' as per JSON specification. You can enable 'serializeSpecialFloatingPointValues' property in 'Json {}' builder to serialize such values."
         )
     }
 
     @Test
     fun testExampleBuiltin03() {
         captureOutput("ExampleBuiltin03") { kotlinx.serialization.example.exampleBuiltin03.main() }.verifyOutputLines(
-            "{\"signature\":\"2067120338512882656\"}"
+            "{\"signature\":2067120338512882656}"
         )
     }
 
     @Test
     fun testExampleBuiltin04() {
         captureOutput("ExampleBuiltin04") { kotlinx.serialization.example.exampleBuiltin04.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"status\":\"SUPPORTED\"}"
+            "{\"signature\":\"2067120338512882656\"}"
         )
     }
 
     @Test
     fun testExampleBuiltin05() {
         captureOutput("ExampleBuiltin05") { kotlinx.serialization.example.exampleBuiltin05.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"status\":\"maintained\"}"
+            "{\"name\":\"kotlinx.serialization\",\"status\":\"SUPPORTED\"}"
         )
     }
 
     @Test
     fun testExampleBuiltin06() {
         captureOutput("ExampleBuiltin06") { kotlinx.serialization.example.exampleBuiltin06.main() }.verifyOutputLines(
-            "{\"first\":1,\"second\":{\"name\":\"kotlinx.serialization\"}}"
+            "{\"name\":\"kotlinx.serialization\",\"status\":\"maintained\"}"
         )
     }
 
     @Test
     fun testExampleBuiltin07() {
         captureOutput("ExampleBuiltin07") { kotlinx.serialization.example.exampleBuiltin07.main() }.verifyOutputLines(
-            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+            "{\"first\":1,\"second\":{\"name\":\"kotlinx.serialization\"}}"
         )
     }
 
@@ -162,13 +176,20 @@ class GuideTest {
     @Test
     fun testExampleBuiltin09() {
         captureOutput("ExampleBuiltin09") { kotlinx.serialization.example.exampleBuiltin09.main() }.verifyOutputLines(
-            "Data(a=[42, 42], b=[42])"
+            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
         )
     }
 
     @Test
     fun testExampleBuiltin10() {
         captureOutput("ExampleBuiltin10") { kotlinx.serialization.example.exampleBuiltin10.main() }.verifyOutputLines(
+            "Data(a=[42, 42], b=[42])"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin11() {
+        captureOutput("ExampleBuiltin11") { kotlinx.serialization.example.exampleBuiltin11.main() }.verifyOutputLines(
             "{\"1\":{\"name\":\"kotlinx.serialization\"},\"2\":{\"name\":\"kotlinx.coroutines\"}}"
         )
     }
@@ -201,6 +222,20 @@ class GuideTest {
     fun testExampleJson04() {
         captureOutput("ExampleJson04") { kotlinx.serialization.example.exampleJson04.main() }.verifyOutputLines(
             "[{\"name\":\"kotlinx.serialization\"},\"Serialization\",{\"name\":\"kotlinx.coroutines\"},\"Coroutines\"]"
+        )
+    }
+
+    @Test
+    fun testExampleJson05() {
+        captureOutput("ExampleJson05") { kotlinx.serialization.example.exampleJson05.main() }.verifyOutputLines(
+            "Repository(name=kotlinx.serialization, language=Kotlin)"
+        )
+    }
+
+    @Test
+    fun testExampleJson06() {
+        captureOutput("ExampleJson06") { kotlinx.serialization.example.exampleJson06.main() }.verifyOutputLines(
+            "{\"value\":NaN}"
         )
     }
 }

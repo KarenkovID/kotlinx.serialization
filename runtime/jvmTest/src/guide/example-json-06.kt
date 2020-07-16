@@ -1,8 +1,10 @@
 // This file was automatically generated from serialization-guide.md by Knit tool. Do not edit.
-package kotlinx.serialization.example.exampleBuiltin02
+package kotlinx.serialization.example.exampleJson06
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+
+val format = Json { serializeSpecialFloatingPointValues = true }
 
 @Serializable
 class Data(
@@ -11,5 +13,5 @@ class Data(
 
 fun main() {
     val data = Data(Double.NaN)
-    println(Json.encodeToString(data))
+    println(format.encodeToString(data))
 }

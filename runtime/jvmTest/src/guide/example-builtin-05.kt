@@ -4,8 +4,8 @@ package kotlinx.serialization.example.exampleBuiltin05
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-@Serializable // required because of @SerialName
-enum class Status { @SerialName("maintained") SUPPORTED }
+// @Serializable annotation is not need for a enum classes
+enum class Status { SUPPORTED }
         
 @Serializable
 class Repository(val name: String, val status: Status) 

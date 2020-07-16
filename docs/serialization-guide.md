@@ -19,11 +19,14 @@
   * [Required properties](#required-properties)
   * [Transient properties](#transient-properties)
   * [Defaults are encoded](#defaults-are-encoded)
+  * [Nullable properties](#nullable-properties)
+  * [Type safety is enforced](#type-safety-is-enforced)
   * [Referenced objects](#referenced-objects)
   * [No compression of repeated references](#no-compression-of-repeated-references)
   * [Serial field names](#serial-field-names)
 * [Builtin classes](#builtin-classes)
   * [Numbers](#numbers)
+  * [Special floating-point values](#special-floating-point-values)
   * [Long numbers](#long-numbers)
   * [Long numbers as strings](#long-numbers-as-strings)
   * [Enum classes](#enum-classes)
@@ -38,6 +41,8 @@
   * [Encoding defaults](#encoding-defaults)
   * [Ignoring unknown keys](#ignoring-unknown-keys)
   * [Allowing structured map keys](#allowing-structured-map-keys)
+  * [Coercing input values](#coercing-input-values)
+  * [Serializing special floating point values](#serializing-special-floating-point-values)
 
 <!--- END -->
 
@@ -45,6 +50,8 @@
 
 Kotlin Serialization is cross-platform and multi-format framework for data serialization &mdash;
 converting trees of objects to strings, byte arrays, or other _serial_ representations and back.
+Kotlin Serialization fully supports and enforces Kotlin type system, making sure only valid 
+objects can be deserialized. 
  
 Kotlin Serialization is not just a library. It is a compiler plugin that is bundled with the Kotlin
 compiler distribution itself. Build configuration is explained in [README.md](../README.md#setup). 
@@ -232,7 +239,7 @@ class Repository private constructor(val owner: String, val name: String) {
 }
 ```    
 
-Serialization works with private primaty constructor and still serializes only backing fields. This code:
+Serialization works with private primary constructor and still serializes only backing fields. This code:
 
 ```kotlin
 fun main() {
@@ -425,9 +432,9 @@ value is equal to the default one, will produce the following exception:
 Exception in thread "main" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property in 'Json {}' builder to ignore unknown keys.
 ```   
 
-> 'ignoreUnknownKeys' feature is explained in [Ignoring Unknown Keys section](#ignoring-unknown-keys)
-
 <!--- TEST LINES_START -->
+
+> 'ignoreUnknownKeys' feature is explained in the [Ignoring Unknown Keys section](#ignoring-unknown-keys) section.
 
 ### Defaults are encoded
 
@@ -455,6 +462,61 @@ See [Encoding defaults][#encoding-defaults] section on how this behavior can be 
 
 <!--- TEST -->
 
+### Nullable properties
+
+Nullable properties are supported:
+
+```kotlin
+@Serializable
+class Repository(val name: String, val renamedTo: String? = null)
+
+fun main() {
+    val data = Repository("kotlinx.serialization")
+    println(Json.encodeToString(data))
+}
+```               
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-10.kt).
+
+This example explicitly encodes `null` in JSON because [Defaults are encoded](#defaults-are-encoded):
+
+```text
+{"name":"kotlinx.serialization","renamedTo":null}
+```     
+
+<!--- TEST -->
+
+### Type safety is enforced
+
+Kotlin serialization strongly enforces type safety of the Kotlin programming language. 
+In particular, let us try to decode a `null` in a JSON into a non-nullable property `language`:
+
+```kotlin
+@Serializable 
+data class Repository(val name: String, val language: String = "Kotlin")
+
+fun main() {
+    val data = Json.decodeFromString<Repository>("""
+        {"name":"kotlinx.serialization","language":null}
+    """)
+    println(data)
+}
+```                                  
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-11.kt).
+
+Even though the `language` property has a default value, it is still an error to attempt to assign 
+the `null` value to it:
+
+```text
+Exception in thread "main" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 52: Expected string literal but 'null' literal was found. Use 'coerceInputValues = true' property in 'Json {}` builder to coerce nulls to default values.
+```                    
+
+<!--- TEST LINES_START -->
+
+However, it is often desired when decoding 3rd-party JSONs to coerce `null` to a default value.
+The corresponding feature is explained in the [Coercing input values](#coercing-input-values) section. 
+
 ### Referenced objects
 
 Serializable class can reference other classes in their serializable properties, 
@@ -474,7 +536,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-10.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-12.kt).
 
 When encoded to JSON this layout results in a nested JSON object:
 
@@ -504,7 +566,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-11.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-13.kt).
 
 You simply get its value encoded twice:
 
@@ -531,7 +593,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-12.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-14.kt).
 
 Now we see that an abbreviated name `lang` is used in JSON output:
 
@@ -553,7 +615,7 @@ import kotlinx.serialization.json.*
 
 ### Numbers
 
-All types of Kotlin numbers can be serialized. 
+All types of integer and floating point Kotlin numbers can be serialized. 
 
 <!--- INCLUDE
 import kotlin.math.*
@@ -584,6 +646,35 @@ Their natural representation in JSON is used:
 
 > Experimental unsigned numbers as well as other experimental inline classes are not supported by Kotlin serialization yet. 
 
+### Special floating-point values
+
+By default, special floating-point values like [Double.NaN] and infinities are not supported in JSON:
+
+```kotlin
+@Serializable
+class Data(
+    val value: Double
+)                     
+
+fun main() {
+    val data = Data(Double.NaN)
+    println(Json.encodeToString(data))
+}
+```                                   
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-02.kt).
+
+Exception:
+
+```text
+Exception in thread "main" kotlinx.serialization.json.JsonEncodingException: 'NaN' is not a valid 'double' as per JSON specification. You can enable 'serializeSpecialFloatingPointValues' property in 'Json {}' builder to serialize such values.
+```   
+
+<!--- TEST LINES_START -->
+
+> 'serializeSpecialFloatingPointValues' feature is explained in 
+> the [Serializing special floating point values](#serializing-special-floating-point-values) section.
+
 ### Long numbers
 
 Long integers are serializable, too:
@@ -598,7 +689,7 @@ fun main() {
 }
 ``` 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-02.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-03.kt).
 
 By default, they are serialized to JSON as numbers:
 
@@ -640,7 +731,7 @@ fun main() {
 }
 ``` 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-03.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-04.kt).
 
 This JSON will get parsed natively by JavaScript without loss of precision:
 
@@ -668,7 +759,7 @@ fun main() {
 }
 ```                                        
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-04.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-05.kt).
 
 In JSON enum gets encoded as a string:
 
@@ -697,7 +788,7 @@ fun main() {
 }
 ```                                        
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-05.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-06.kt).
 
 In JSON enum gets encoded as a string:
 
@@ -721,7 +812,7 @@ fun main() {
 }  
 ```                                
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-06.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-07.kt).
 
 ```text
 {"first":1,"second":{"name":"kotlinx.serialization"}}
@@ -749,7 +840,7 @@ fun main() {
 }  
 ```
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-07.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-08.kt).
 
 The result is represented as a list in JSON:
 
@@ -778,7 +869,7 @@ fun main() {
 }  
 ```
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-08.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-09.kt).
 
 It is also represented as a list in JSON, like all other collections.
 
@@ -813,7 +904,7 @@ fun main() {
 }
 ```    
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-09.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-10.kt).
 
 Because `data.b` property is a [Set], the duplicate values from it had disappeared:
 
@@ -840,7 +931,7 @@ fun main() {
 }  
 ```                                
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-10.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-11.kt).
 
 In JSON it gets represented as an object. In JSON object keys are always strings, so keys are encoded as strings
 even if they are numbers in Kotlin, as we can see below:
@@ -856,10 +947,14 @@ It can be lifted as shown in [Allowing structured map keys](#allowing-structured
  
 ## Custom JSON configuration
 
-A custom JSON configuration can be specified by creating your own [Json] class instance using an existing 
+By default, [Json] implementation is quite strict with respect to invalid inputs, enforces Kotlin type safety, and
+restricts Kotlin values that can be serialized so that the resulting JSON representations are standard.
+Many non-standard JSON features are supported by creating a custom instance of a JSON _format_.    
+
+JSON format configuration can be specified by creating your own [Json] class instance using an existing 
 instance, such as a default `Json` object, and a [Json()] builder function. Additional parameters
-are specified in a block via [JsonBuilder] DSL. The resulting `Json` instance is immutable and thread-safe; it can be 
-simply stored in a top-level property.   
+are specified in a block via [JsonBuilder] DSL. The resulting `Json` format instance is immutable and thread-safe; 
+it can be simply stored in a top-level property. 
 
 This section shows various configuration features that [Json] supports.
 
@@ -873,14 +968,14 @@ import kotlinx.serialization.json.*
 JSON can be configured to pretty print the output by setting the [prettyPrint][JsonBuilder.prettyPrint] property:
 
 ```kotlin
-val json = Json { prettyPrint = true }
+val format = Json { prettyPrint = true }
 
 @Serializable 
 data class Repository(val name: String, val language: String)
 
 fun main() {                                      
     val data = Repository("kotlinx.serialization", "Kotlin")
-    println(json.encodeToString(data))
+    println(format.encodeToString(data))
 }
 ```
 
@@ -905,7 +1000,7 @@ This is especially useful for nullable properties with null defaults to avoid wr
 null values:
 
 ```kotlin
-val json = Json { encodeDefaults = false }
+val format = Json { encodeDefaults = false }
 
 @Serializable 
 class Repository(
@@ -916,7 +1011,7 @@ class Repository(
 
 fun main() {
     val data = Repository("kotlinx.serialization")
-    println(json.encodeToString(data))
+    println(format.encodeToString(data))
 }
 ```                                  
 
@@ -930,7 +1025,6 @@ Produces the following output which has only `name` property:
 
 <!--- TEST -->
 
-
 ### Ignoring unknown keys
 
 JSON format is often used to read output of 3rd-party services or in otherwise highly-dynamic environment where
@@ -938,13 +1032,13 @@ new properties could be added as a part of API evolution. By default, unknown ke
 This behavior can be configured with [ignoreUnknownKeys][JsonBuilder.ignoreUnknownKeys] property:
 
 ```kotlin
-val json = Json { ignoreUnknownKeys = true }
+val format = Json { ignoreUnknownKeys = true }
 
 @Serializable 
 data class Repository(val name: String)
     
 fun main() {             
-    val data = json.decodeFromString<Repository>("""
+    val data = format.decodeFromString<Repository>("""
         {"name":"kotlinx.serialization","language":"Kotlin"}
     """)
     println(data)
@@ -968,7 +1062,7 @@ are strings and can be used to represent only primitives or enums by default.
 A non-standard support for structured key can be enabled with [allowStructuredMapKeys][JsonBuilder.allowStructuredMapKeys] property:
 
 ```kotlin
-val json = Json { allowStructuredMapKeys = true }
+val format = Json { allowStructuredMapKeys = true }
 
 @Serializable 
 data class Repository(val name: String)
@@ -978,7 +1072,7 @@ fun main() {
         Repository("kotlinx.serialization") to "Serialization",
         Repository("kotlinx.coroutines") to "Coroutines"
     )
-    println(json.encodeToString(map))
+    println(format.encodeToString(map))
 }
 ```                                  
 
@@ -992,9 +1086,85 @@ The map with structured keys gets represented as `[key1, value1, key2, value2,..
 
 <!--- TEST -->
 
+### Coercing input values
+
+JSON formats that are encountered in the wild are often very flexible in terms of types and evolve quickly.
+This can lead to exceptions during decoding when the actual values do not match the expected values. 
+By default [Json] implementation is strict with respect to input types as was demonstrated in
+the [Type safety is enforced](#type-safety-is-enforced) section. It can be somewhat relaxed using
+[coerceInputValues][JsonBuilder.coerceInputValues] property. 
+
+This property only has an effect during decoding. It treats a limited subset of invalid input values as if the
+corresponding property was missing and uses a default value of the corresponding property instead.
+Current list of supported invalid values is:
+
+* `null` inputs for a non-nullable types.
+* Unknown values for enums.
+
+> This list may be expanded in the future, so that [Json] instance configured with this property becomes even more
+> permissive to invalid value in the input, replacing them with defaults.    
+
+Taking the example from the [Type safety is enforced](#type-safety-is-enforced) section:
+
+```kotlin
+val format = Json { coerceInputValues = true }
+
+@Serializable 
+data class Repository(val name: String, val language: String = "Kotlin")
+
+fun main() {
+    val data = format.decodeFromString<Repository>("""
+        {"name":"kotlinx.serialization","language":null}
+    """)
+    println(data)
+}
+```                                  
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-json-05.kt).
+
+We see that invalid `null` value for the `language` property was coerced into the default value:
+
+```text
+Repository(name=kotlinx.serialization, language=Kotlin)
+```    
+
+<!--- TEST -->                
+
+### Serializing special floating point values
+
+As we saw in the [Special floating point values](#special-floating-point-values) section, 
+by default, special floating-point values like [Double.NaN] and infinities are not supported in JSON.
+They can be enabled using [serializeSpecialFloatingPointValues][JsonBuilder.serializeSpecialFloatingPointValues]
+property:
+
+```kotlin       
+val format = Json { serializeSpecialFloatingPointValues = true }
+
+@Serializable
+class Data(
+    val value: Double
+)                     
+
+fun main() {
+    val data = Data(Double.NaN)
+    println(format.encodeToString(data))
+}
+```                                   
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-json-06.kt).
+
+This example produces the following non-stardard JSON output, yet it is a widely used encoding for
+special values in JVM world:
+
+```text
+{"value":NaN}
+```   
+
+<!--- TEST -->
 
 <!-- stdlib references -->
 [kotlin.jvm.Transient]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/
+[Double.NaN]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/-na-n.html
 [Pair]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/ 
 [Triple]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-triple/ 
 [Regex]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/
@@ -1008,6 +1178,8 @@ The map with structured keys gets represented as `[key1, value1, key2, value2,..
 [Required]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-required/index.html
 [Transient]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-transient/index.html
 [SerialName]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-serial-name/index.html
+<!--- INDEX kotlinx.serialization.builtins -->
+[LongAsStringSerializer]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.builtins/-long-as-string-serializer/index.html
 <!--- INDEX kotlinx.serialization.json -->
 [Json.encodeToString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/encode-to-string.html
 [Json.decodeFromString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/decode-from-string.html
@@ -1018,5 +1190,7 @@ The map with structured keys gets represented as `[key1, value1, key2, value2,..
 [JsonBuilder.encodeDefaults]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/encode-defaults.html
 [JsonBuilder.ignoreUnknownKeys]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/ignore-unknown-keys.html
 [JsonBuilder.allowStructuredMapKeys]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/allow-structured-map-keys.html
+[JsonBuilder.coerceInputValues]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/coerce-input-values.html
+[JsonBuilder.serializeSpecialFloatingPointValues]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/serialize-special-floating-point-values.html
 <!--- END -->
 

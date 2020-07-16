@@ -203,8 +203,8 @@ private val defaultJsonModule = SerializersModule {
     contextual(JsonArraySerializer)
 }
 
-internal const val lenientHint = "Use 'JsonConfiguration.isLenient = true' to accept non-compliant JSON"
-
+internal const val lenientHint = "Use 'isLenient = true' property in 'Json {}' builder to accept non-compliant JSON"
+internal const val coerceHint = "Use 'coerceInputValues = true' property in 'Json {}` builder to coerce nulls to default values"
 
 internal class JsonImpl(
     configuration: JsonConfiguration = JsonConfiguration.Stable,

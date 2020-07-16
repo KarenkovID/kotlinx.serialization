@@ -5,12 +5,17 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
 @Serializable
-class Repository(val name: String)
-
+data class Data(
+    val a: List<Int>,
+    val b: Set<Int>
+)
+     
 fun main() {
-    val map = mapOf(
-        1 to Repository("kotlinx.serialization"),
-        2 to Repository("kotlinx.coroutines")    
-    )
-    println(Json.encodeToString(map))
-}  
+    val data = Json.decodeFromString<Data>("""
+        {
+            "a": [42, 42],
+            "b": [42, 42]
+        }
+    """)
+    println(data)
+}

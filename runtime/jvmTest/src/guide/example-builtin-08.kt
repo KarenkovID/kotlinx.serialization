@@ -8,9 +8,9 @@ import kotlinx.serialization.json.*
 class Repository(val name: String)
 
 fun main() {
-    val set = setOf(
+    val list = listOf(
         Repository("kotlinx.serialization"),
         Repository("kotlinx.coroutines")    
     )
-    println(Json.encodeToString(set))
+    println(Json.encodeToString(list))
 }  

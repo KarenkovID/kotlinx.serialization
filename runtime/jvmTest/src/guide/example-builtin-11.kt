@@ -1,5 +1,5 @@
 // This file was automatically generated from serialization-guide.md by Knit tool. Do not edit.
-package kotlinx.serialization.example.exampleBuiltin09
+package kotlinx.serialization.example.exampleBuiltin11
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
@@ -8,9 +8,9 @@ import kotlinx.serialization.json.*
 class Repository(val name: String)
 
 fun main() {
-    val set = setOf(
-        Repository("kotlinx.serialization"),
-        Repository("kotlinx.coroutines")    
+    val map = mapOf(
+        1 to Repository("kotlinx.serialization"),
+        2 to Repository("kotlinx.coroutines")    
     )
-    println(Json.encodeToString(set))
+    println(Json.encodeToString(map))
 }  

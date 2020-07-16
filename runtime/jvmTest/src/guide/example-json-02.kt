@@ -4,7 +4,7 @@ package kotlinx.serialization.example.exampleJson02
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-val json = Json { encodeDefaults = false }
+val format = Json { encodeDefaults = false }
 
 @Serializable 
 class Repository(
@@ -15,5 +15,5 @@ class Repository(
 
 fun main() {
     val data = Repository("kotlinx.serialization")
-    println(json.encodeToString(data))
+    println(format.encodeToString(data))
 }

@@ -151,10 +151,17 @@ internal class JsonReader(private val source: String) {
     }
 
     fun takeStringQuoted(): String {
-        if (tokenClass != TC_STRING) fail(
-            "Expected string literal with quotes. $lenientHint",
-            tokenPosition
-        )
+        when (tokenClass) {
+            TC_STRING -> {} // ok
+            TC_NULL -> fail(
+                "Expected string literal but 'null' literal was found. $coerceHint",
+                tokenPosition
+            )
+            else -> fail(
+                "Expected string literal with quotes. $lenientHint",
+                tokenPosition
+            )
+        }
         return takeStringInternal()
     }
 

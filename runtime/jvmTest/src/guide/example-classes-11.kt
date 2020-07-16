@@ -4,14 +4,12 @@ package kotlinx.serialization.example.exampleClasses11
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-@Serializable
-class Repository(val name: String, val owner: User, val maintainer: User)
-
-@Serializable
-class User(val name: String)
+@Serializable 
+data class Repository(val name: String, val language: String = "Kotlin")
 
 fun main() {
-    val owner = User("kotlin")
-    val data = Repository("kotlinx.serialization", owner, owner)
-    println(Json.encodeToString(data))
+    val data = Json.decodeFromString<Repository>("""
+        {"name":"kotlinx.serialization","language":null}
+    """)
+    println(data)
 }

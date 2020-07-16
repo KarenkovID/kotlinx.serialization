@@ -4,12 +4,12 @@ package kotlinx.serialization.example.exampleJson01
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-val json = Json { prettyPrint = true }
+val format = Json { prettyPrint = true }
 
 @Serializable 
 data class Repository(val name: String, val language: String)
 
 fun main() {                                      
     val data = Repository("kotlinx.serialization", "Kotlin")
-    println(json.encodeToString(data))
+    println(format.encodeToString(data))
 }
