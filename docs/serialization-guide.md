@@ -1057,9 +1057,9 @@ Repository(name=kotlinx.serialization)
 
 ### Allowing structured map keys
 
-JSON format does not natively support the concept of a map with a structured key. Key in JSON objects
+JSON format does not natively support the concept of a map with structured keys. Keys in JSON objects
 are strings and can be used to represent only primitives or enums by default.
-A non-standard support for structured key can be enabled with [allowStructuredMapKeys][JsonBuilder.allowStructuredMapKeys] property:
+A non-standard support for structured keys can be enabled with [allowStructuredMapKeys][JsonBuilder.allowStructuredMapKeys] property:
 
 ```kotlin
 val format = Json { allowStructuredMapKeys = true }
@@ -1078,7 +1078,7 @@ fun main() {
 
 > You can get the full code [here](../runtime/jvmTest/src/guide/example-json-04.kt).
 
-The map with structured keys gets represented as `[key1, value1, key2, value2,...]` array:
+The map with structured keys gets represented as `[key1, value1, key2, value2,...]` JSON array:
  
 ```text
 [{"name":"kotlinx.serialization"},"Serialization",{"name":"kotlinx.coroutines"},"Coroutines"]
