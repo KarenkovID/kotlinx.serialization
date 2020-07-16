@@ -1,14 +1,16 @@
 // This file was automatically generated from serialization-guide.md by Knit tool. Do not edit.
-package kotlinx.serialization.example.exampleClasses08
+package kotlinx.serialization.example.exampleJson03
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-@Serializable 
-data class Repository(val name: String, @Transient val language: String = "Kotlin")
+val json = Json { ignoreUnknownKeys = true }
 
-fun main() {
-    val data = Json.decodeFromString<Repository>("""
+@Serializable 
+data class Repository(val name: String)
+    
+fun main() {             
+    val data = json.decodeFromString<Repository>("""
         {"name":"kotlinx.serialization","language":"Kotlin"}
     """)
     println(data)

@@ -47,8 +47,8 @@ internal fun UnknownKeyException(key: String, input: String) = JsonDecodingExcep
 
 internal fun InvalidKeyKindException(keyDescriptor: SerialDescriptor) = JsonEncodingException(
     "Value of type '${keyDescriptor.serialName}' can't be used in JSON as a key in the map. " +
-            "It should have either primitive or enum kind, but its kind is '${keyDescriptor.kind}.'\n" +
-            "You can convert such maps to arrays [key1, value1, key2, value2,...] using 'allowStructuredMapKeys' property in JsonConfiguration"
+            "It should have either primitive or enum kind, but its kind is '${keyDescriptor.kind}'.\n" +
+            "You can convert such maps to arrays [key1, value1, key2, value2,...] using 'allowStructuredMapKeys' property in 'Json {}' builder"
 )
 
 private fun String.minify(offset: Int = -1): String {

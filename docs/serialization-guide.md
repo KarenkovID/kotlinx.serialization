@@ -15,19 +15,29 @@
   * [Constructor properties requirement](#constructor-properties-requirement)
   * [Data validation](#data-validation)
   * [Optional properties](#optional-properties)
-  * [Require properties with default](#require-properties-with-default)
+  * [Optional property initializer call](#optional-property-initializer-call)
+  * [Required properties](#required-properties)
   * [Transient properties](#transient-properties)
   * [Defaults are encoded](#defaults-are-encoded)
   * [Referenced objects](#referenced-objects)
   * [No compression of repeated references](#no-compression-of-repeated-references)
+  * [Serial field names](#serial-field-names)
 * [Builtin classes](#builtin-classes)
+  * [Numbers](#numbers)
+  * [Long numbers](#long-numbers)
+  * [Long numbers as strings](#long-numbers-as-strings)
+  * [Enum classes](#enum-classes)
+  * [Serial names of enum entries](#serial-names-of-enum-entries)
+  * [Pair and triple](#pair-and-triple)
   * [Lists](#lists)
   * [Sets and other collections](#sets-and-other-collections)
   * [Deserializing collections](#deserializing-collections)
+  * [Maps](#maps)
 * [Custom JSON configuration](#custom-json-configuration)
   * [Pretty printing](#pretty-printing)
-  * [Encode defaults](#encode-defaults)
+  * [Encoding defaults](#encoding-defaults)
   * [Ignoring unknown keys](#ignoring-unknown-keys)
+  * [Allowing structured map keys](#allowing-structured-map-keys)
 
 <!--- END -->
 
@@ -49,7 +59,8 @@ through two mutually intertwined processes. In the first step an object is _seri
 it is converted into  a serial sequence of its constituting primitive values. This process is common for all 
 data formats and its result depends on the object being serialized. A _serializer_ controls this process. 
 The second step is called _encoding_ &mdash; it is the conversion of the corresponding sequence of primitives into 
-the output format representation. An _encoder_ controls this process. 
+the output format representation. An _encoder_ controls this process. Whenever the distinction is not important
+both encoding and serialization are used interchangeably. 
 
 The reverse process starts with parsing of the input format and _decoding_ of primitive values,
 followed by _deserialization_ of the resulting stream into objects. We'll see details of this process later. 
@@ -328,7 +339,40 @@ Repository(name=kotlinx.serialization, language=Kotlin)
 
 <!--- TEST -->
 
-### Require properties with default
+### Optional property initializer call
+
+When an optional properly is present in the input, the corresponding initializer for this
+property is not even called. This is a feature designed for performance, so be careful not
+to rely on side-effects in initializers. Consider this example:
+
+ ```kotlin                                                                       
+fun computeLanguage(): String {
+    println("Computing")
+    return "Kotlin"
+}
+
+ @Serializable 
+ data class Repository(val name: String, val language: String = computeLanguage())
+ 
+ fun main() {
+     val data = Json.decodeFromString<Repository>("""
+         {"name":"kotlinx.serialization","language":"Kotlin"}
+     """)
+     println(data)
+ }
+ ```                                  
+ 
+ > You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-06.kt).
+ 
+Because `language` property was specified in the input, we don't see "Computing" string printed:
+ 
+ ```text
+ Repository(name=kotlinx.serialization, language=Kotlin)
+ ```   
+ 
+ <!--- TEST -->
+
+### Required properties
 
 A property with a default value can be made required in a serial format with the [Required] annotation.
 If we change the previous example by marking `language` property as `@Required`:
@@ -345,7 +389,7 @@ fun main() {
 }
 ```                                  
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-06.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-07.kt).
 
 We'll get the following exception:
 
@@ -358,9 +402,7 @@ Exception in thread "main" kotlinx.serialization.MissingFieldException: Field 'l
 ### Transient properties
 
 A property can be excluded from serialization by marking it with the [Transient] annotation 
-(don't confuse it with [kotlin.jvm.Transient]). Such a property must have a default value
-and attempt to explicitly specify its value in the serial format, even if the specified
-value is equal to the default one: 
+(don't confuse it with [kotlin.jvm.Transient]). Such a property must have a default value:
 
 ```kotlin
 @Serializable 
@@ -374,12 +416,13 @@ fun main() {
 }
 ```                                  
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-07.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-08.kt).
 
-will produce the following exception:
+Attempt to explicitly specify its value in the serial format, even if the specified
+value is equal to the default one, will produce the following exception:
 
 ```text
-Exception in thread "main" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property to ignore unknown keys.
+Exception in thread "main" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property in 'Json {}' builder to ignore unknown keys.
 ```   
 
 > 'ignoreUnknownKeys' feature is explained in [Ignoring Unknown Keys section](#ignoring-unknown-keys)
@@ -400,7 +443,7 @@ fun main() {
 }
 ```                                  
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-08.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-09.kt).
 
 Produces the following output which has `language` property, even though its value is equal to the default one:
 
@@ -408,7 +451,7 @@ Produces the following output which has `language` property, even though its val
 {"name":"kotlinx.serialization","language":"Kotlin"}
 ```                 
 
-See [Encode defaults][#encode-defaults] section on how this behavior can be configured for JSON. 
+See [Encoding defaults][#encoding-defaults] section on how this behavior can be configured for JSON. 
 
 <!--- TEST -->
 
@@ -431,7 +474,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-09.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-10.kt).
 
 When encoded to JSON this layout results in a nested JSON object:
 
@@ -461,7 +504,7 @@ fun main() {
 }
 ```                                 
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-10.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-11.kt).
 
 You simply get its value encoded twice:
 
@@ -470,6 +513,33 @@ You simply get its value encoded twice:
 ```
 
 <!--- TEST -->
+
+### Serial field names
+
+The names of the properties that are used in encoded representation, JSON in our examples, are equal to 
+their names in the source code by default. The name that is used for serialization is called a _serial name_ and
+can be changed using the [SerialName] annotation. For example, we can have a `language` property in the source,
+with an abbreviated serial name:
+
+```kotlin
+@Serializable
+class Repository(val name: String, @SerialName("lang") val language: String)
+
+fun main() {
+    val data = Repository("kotlinx.serialization", "Kotlin")
+    println(Json.encodeToString(data))
+}
+```                                 
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-classes-12.kt).
+
+Now we see that an abbreviated name `lang` is used in JSON output:
+
+```text
+{"name":"kotlinx.serialization","lang":"Kotlin"}
+```
+
+<!--- TEST -->   
 
 ## Builtin classes
 
@@ -481,9 +551,190 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 -->
 
+### Numbers
+
+All types of Kotlin numbers can be serialized. 
+
+<!--- INCLUDE
+import kotlin.math.*
+-->
+
+```kotlin
+@Serializable
+class Data(
+    val answer: Int,
+    val pi: Double
+)                     
+
+fun main() {
+    val data = Data(42, PI)
+    println(Json.encodeToString(data))
+}
+```                                   
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-01.kt).
+
+Their natural representation in JSON is used:
+
+```text
+{"answer":42,"pi":3.141592653589793}
+```
+
+<!--- TEST -->
+
+> Experimental unsigned numbers as well as other experimental inline classes are not supported by Kotlin serialization yet. 
+
+### Long numbers
+
+Long integers are serializable, too:
+
+```kotlin                
+@Serializable
+class Data(val signature: Long)
+
+fun main() {
+    val data = Data(0x1CAFE2FEED0BABE0)
+    println(Json.encodeToString(data))
+}
+``` 
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-02.kt).
+
+By default, they are serialized to JSON as numbers:
+
+```text
+{"signature":2067120338512882656}
+```
+
+<!--- TEST -->
+
+### Long numbers as strings
+
+The JSON output from the previous example will get decoded normally by Kotlin serialization running on Kotlin/JS.
+However, if we try parse this JSON by native JavaScript methods, we'll get this:
+
+```
+JSON.parse("{\"signature\":2067120338512882656}")
+▶ {signature: 2067120338512882700} 
+```
+
+The full range of Kotlin Long does not fit in the JavaScript number, so its precision gets lost in JavaScript.
+A common workaround is to represent long numbers with full precision in JSON string type.
+This approach is optionally supported by Kotlin serialization with [LongAsStringSerializer] that
+can specified for a given Long property using [Serializable] annotation:
+
+<!--- INCLUDE
+import kotlinx.serialization.builtins.*
+-->
+
+```kotlin                
+@Serializable
+class Data(
+    @Serializable(with=LongAsStringSerializer::class)
+    val signature: Long
+)
+
+fun main() {
+    val data = Data(0x1CAFE2FEED0BABE0)
+    println(Json.encodeToString(data))
+}
+``` 
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-03.kt).
+
+This JSON will get parsed natively by JavaScript without loss of precision:
+
+```text
+{"signature":"2067120338512882656"}
+```
+
+<!--- TEST -->
+
+### Enum classes
+
+All enum classes are serializable out of the box without having to mark them `@Serializable`,
+as the following example shows:
+
+```kotlin          
+// @Serializable annotation is not need for a enum classes
+enum class Status { SUPPORTED }
+        
+@Serializable
+class Repository(val name: String, val status: Status) 
+
+fun main() {
+    val data = Repository("kotlinx.serialization", Status.SUPPORTED)
+    println(Json.encodeToString(data))
+}
+```                                        
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-04.kt).
+
+In JSON enum gets encoded as a string:
+
+```text
+{"name":"kotlinx.serialization","status":"SUPPORTED"}
+```   
+
+<!--- TEST -->
+
+### Serial names of enum entries
+
+Serial names of enum entries can be customized with [SerialName] annotation just like 
+it was shown for properties in the [Serial field names](#serial-field-names) section.
+However, in this case the whole enum class must be marked with [Serializable] annotation:
+
+```kotlin
+@Serializable // required because of @SerialName
+enum class Status { @SerialName("maintained") SUPPORTED }
+        
+@Serializable
+class Repository(val name: String, val status: Status) 
+
+fun main() {
+    val data = Repository("kotlinx.serialization", Status.SUPPORTED)
+    println(Json.encodeToString(data))
+}
+```                                        
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-05.kt).
+
+In JSON enum gets encoded as a string:
+
+```text
+{"name":"kotlinx.serialization","status":"maintained"}
+```   
+
+<!--- TEST -->
+
+### Pair and triple
+
+Simple data classes [Pair] and [Triple] from the Kotlin standard library are serializable:
+
+```kotlin
+@Serializable
+class Repository(val name: String)
+
+fun main() {
+    val pair = 1 to Repository("kotlinx.serialization")
+    println(Json.encodeToString(pair))
+}  
+```                                
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-06.kt).
+
+```text
+{"first":1,"second":{"name":"kotlinx.serialization"}}
+```
+
+<!--- TEST -->
+ 
+> Not all classes from the standard library are serializable. In particular ranges and [Regex] class
+> are not serializable at the moment. Support for their serialization may be added in the future.  
+
 ### Lists 
 
-Any [List] of serializable classes can be serialized:
+A [List] of serializable classes can be serialized:
 
 ```kotlin
 @Serializable
@@ -498,7 +749,7 @@ fun main() {
 }  
 ```
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-01.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-07.kt).
 
 The result is represented as a list in JSON:
 
@@ -527,7 +778,7 @@ fun main() {
 }  
 ```
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-02.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-08.kt).
 
 It is also represented as a list in JSON, like all other collections.
 
@@ -562,7 +813,7 @@ fun main() {
 }
 ```    
 
-> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-03.kt).
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-09.kt).
 
 Because `data.b` property is a [Set], the duplicate values from it had disappeared:
 
@@ -571,9 +822,38 @@ Data(a=[42, 42], b=[42])
 ```
 
 <!--- TEST -->
+
+### Maps
+
+A [Map] with a primitive key or a enum key and an arbitrary serializable value can be serialized:
+
+```kotlin
+@Serializable
+class Repository(val name: String)
+
+fun main() {
+    val map = mapOf(
+        1 to Repository("kotlinx.serialization"),
+        2 to Repository("kotlinx.coroutines")    
+    )
+    println(Json.encodeToString(map))
+}  
+```                                
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-builtin-10.kt).
+
+In JSON it gets represented as an object. In JSON object keys are always strings, so keys are encoded as strings
+even if they are numbers in Kotlin, as we can see below:
+
+```text
+{"1":{"name":"kotlinx.serialization"},"2":{"name":"kotlinx.coroutines"}}
+```
+
+<!--- TEST -->
+
+It is a JSON-specific limitation that keys cannot be composite. 
+It can be lifted as shown in [Allowing structured map keys](#allowing-structured-map-keys) section. 
  
-
-
 ## Custom JSON configuration
 
 A custom JSON configuration can be specified by creating your own [Json] class instance using an existing 
@@ -617,7 +897,7 @@ It gives the following nice result:
 
 <!--- TEST -->
 
-### Encode defaults 
+### Encoding defaults 
 
 Default values of properties don't have to be encoded, because they will be reconstructed during encoding anyway.
 It can be configured by [encodeDefaults][JsonBuilder.encodeDefaults] property.
@@ -681,18 +961,53 @@ Repository(name=kotlinx.serialization)
 
 <!--- TEST -->
 
+### Allowing structured map keys
+
+JSON format does not natively support the concept of a map with a structured key. Key in JSON objects
+are strings and can be used to represent only primitives or enums by default.
+A non-standard support for structured key can be enabled with [allowStructuredMapKeys][JsonBuilder.allowStructuredMapKeys] property:
+
+```kotlin
+val json = Json { allowStructuredMapKeys = true }
+
+@Serializable 
+data class Repository(val name: String)
+    
+fun main() {             
+    val map = mapOf(
+        Repository("kotlinx.serialization") to "Serialization",
+        Repository("kotlinx.coroutines") to "Coroutines"
+    )
+    println(json.encodeToString(map))
+}
+```                                  
+
+> You can get the full code [here](../runtime/jvmTest/src/guide/example-json-04.kt).
+
+The map with structured keys gets represented as `[key1, value1, key2, value2,...]` array:
+ 
+```text
+[{"name":"kotlinx.serialization"},"Serialization",{"name":"kotlinx.coroutines"},"Coroutines"]
+``` 
+
+<!--- TEST -->
 
 
 <!-- stdlib references -->
 [kotlin.jvm.Transient]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-transient/
+[Pair]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/ 
+[Triple]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-triple/ 
+[Regex]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/
 [List]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/ 
 [Set]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/ 
+[Map]: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/ 
 
 <!--- MODULE /kotlinx-serialization -->
 <!--- INDEX kotlinx.serialization -->
 [Serializable]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-serializable/index.html
 [Required]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-required/index.html
 [Transient]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-transient/index.html
+[SerialName]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization/-serial-name/index.html
 <!--- INDEX kotlinx.serialization.json -->
 [Json.encodeToString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/encode-to-string.html
 [Json.decodeFromString]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json/decode-from-string.html
@@ -702,5 +1017,6 @@ Repository(name=kotlinx.serialization)
 [JsonBuilder.prettyPrint]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/pretty-print.html
 [JsonBuilder.encodeDefaults]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/encode-defaults.html
 [JsonBuilder.ignoreUnknownKeys]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/ignore-unknown-keys.html
+[JsonBuilder.allowStructuredMapKeys]: https://kotlin.github.io/kotlinx.serialization/kotlinx-serialization/kotlinx.serialization.json/-json-builder/allow-structured-map-keys.html
 <!--- END -->
 

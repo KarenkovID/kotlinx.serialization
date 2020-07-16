@@ -62,58 +62,114 @@ class GuideTest {
     }
 
     @Test
-    fun testExampleClasses06() {
-        captureOutput("ExampleClasses06") { kotlinx.serialization.example.exampleClasses06.main() }.verifyOutputLinesStart(
+    fun testExampleClasses07() {
+        captureOutput("ExampleClasses07") { kotlinx.serialization.example.exampleClasses07.main() }.verifyOutputLinesStart(
             "Exception in thread \"main\" kotlinx.serialization.MissingFieldException: Field 'language' is required, but it was missing"
         )
     }
 
     @Test
-    fun testExampleClasses07() {
-        captureOutput("ExampleClasses07") { kotlinx.serialization.example.exampleClasses07.main() }.verifyOutputLinesStart(
-            "Exception in thread \"main\" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property to ignore unknown keys."
-        )
-    }
-
-    @Test
     fun testExampleClasses08() {
-        captureOutput("ExampleClasses08") { kotlinx.serialization.example.exampleClasses08.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"language\":\"Kotlin\"}"
+        captureOutput("ExampleClasses08") { kotlinx.serialization.example.exampleClasses08.main() }.verifyOutputLinesStart(
+            "Exception in thread \"main\" kotlinx.serialization.json.JsonDecodingException: Unexpected JSON token at offset 60: Encountered an unknown key 'language'. You can enable 'ignoreUnknownKeys' property in 'Json {}' builder to ignore unknown keys."
         )
     }
 
     @Test
     fun testExampleClasses09() {
         captureOutput("ExampleClasses09") { kotlinx.serialization.example.exampleClasses09.main() }.verifyOutputLines(
-            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"}}"
+            "{\"name\":\"kotlinx.serialization\",\"language\":\"Kotlin\"}"
         )
     }
 
     @Test
     fun testExampleClasses10() {
         captureOutput("ExampleClasses10") { kotlinx.serialization.example.exampleClasses10.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"}}"
+        )
+    }
+
+    @Test
+    fun testExampleClasses11() {
+        captureOutput("ExampleClasses11") { kotlinx.serialization.example.exampleClasses11.main() }.verifyOutputLines(
             "{\"name\":\"kotlinx.serialization\",\"owner\":{\"name\":\"kotlin\"},\"maintainer\":{\"name\":\"kotlin\"}}"
+        )
+    }
+
+    @Test
+    fun testExampleClasses12() {
+        captureOutput("ExampleClasses12") { kotlinx.serialization.example.exampleClasses12.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"lang\":\"Kotlin\"}"
         )
     }
 
     @Test
     fun testExampleBuiltin01() {
         captureOutput("ExampleBuiltin01") { kotlinx.serialization.example.exampleBuiltin01.main() }.verifyOutputLines(
-            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+            "{\"answer\":42,\"pi\":3.141592653589793}"
         )
     }
 
     @Test
     fun testExampleBuiltin02() {
         captureOutput("ExampleBuiltin02") { kotlinx.serialization.example.exampleBuiltin02.main() }.verifyOutputLines(
-            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+            "{\"signature\":2067120338512882656}"
         )
     }
 
     @Test
     fun testExampleBuiltin03() {
         captureOutput("ExampleBuiltin03") { kotlinx.serialization.example.exampleBuiltin03.main() }.verifyOutputLines(
+            "{\"signature\":\"2067120338512882656\"}"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin04() {
+        captureOutput("ExampleBuiltin04") { kotlinx.serialization.example.exampleBuiltin04.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"status\":\"SUPPORTED\"}"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin05() {
+        captureOutput("ExampleBuiltin05") { kotlinx.serialization.example.exampleBuiltin05.main() }.verifyOutputLines(
+            "{\"name\":\"kotlinx.serialization\",\"status\":\"maintained\"}"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin06() {
+        captureOutput("ExampleBuiltin06") { kotlinx.serialization.example.exampleBuiltin06.main() }.verifyOutputLines(
+            "{\"first\":1,\"second\":{\"name\":\"kotlinx.serialization\"}}"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin07() {
+        captureOutput("ExampleBuiltin07") { kotlinx.serialization.example.exampleBuiltin07.main() }.verifyOutputLines(
+            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin08() {
+        captureOutput("ExampleBuiltin08") { kotlinx.serialization.example.exampleBuiltin08.main() }.verifyOutputLines(
+            "[{\"name\":\"kotlinx.serialization\"},{\"name\":\"kotlinx.coroutines\"}]"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin09() {
+        captureOutput("ExampleBuiltin09") { kotlinx.serialization.example.exampleBuiltin09.main() }.verifyOutputLines(
             "Data(a=[42, 42], b=[42])"
+        )
+    }
+
+    @Test
+    fun testExampleBuiltin10() {
+        captureOutput("ExampleBuiltin10") { kotlinx.serialization.example.exampleBuiltin10.main() }.verifyOutputLines(
+            "{\"1\":{\"name\":\"kotlinx.serialization\"},\"2\":{\"name\":\"kotlinx.coroutines\"}}"
         )
     }
 
@@ -138,6 +194,13 @@ class GuideTest {
     fun testExampleJson03() {
         captureOutput("ExampleJson03") { kotlinx.serialization.example.exampleJson03.main() }.verifyOutputLines(
             "Repository(name=kotlinx.serialization)"
+        )
+    }
+
+    @Test
+    fun testExampleJson04() {
+        captureOutput("ExampleJson04") { kotlinx.serialization.example.exampleJson04.main() }.verifyOutputLines(
+            "[{\"name\":\"kotlinx.serialization\"},\"Serialization\",{\"name\":\"kotlinx.coroutines\"},\"Coroutines\"]"
         )
     }
 }
