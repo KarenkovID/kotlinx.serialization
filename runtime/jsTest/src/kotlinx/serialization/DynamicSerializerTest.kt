@@ -8,6 +8,7 @@ import kotlinx.serialization.builtins.*
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.internal.DynamicObjectSerializer
 import kotlinx.serialization.json.*
+import kotlinx.serialization.json.internal.*
 import kotlinx.serialization.modules.*
 import kotlin.test.*
 
@@ -140,7 +141,7 @@ class DynamicSerializerTest {
 
         val serialized = DynamicObjectSerializer(
             EmptySerializersModule,
-            JsonConfiguration.Default,
+            JsonConf(),
             encodeNullAsUndefined = true
         ).serialize(DataWrapper.serializer(), data)
         assertNull(serialized.d)
@@ -148,12 +149,11 @@ class DynamicSerializerTest {
 
         val serializedWithNull = DynamicObjectSerializer(
             EmptySerializersModule,
-            JsonConfiguration.Default,
+            JsonConf(),
             encodeNullAsUndefined = false
         ).serialize(DataWrapper.serializer(), data)
         assertNull(serializedWithNull.d)
         assertTrue(js("""Object.keys(serializedWithNull).includes("d")"""), "should contain null properties")
-        Json(JsonConfiguration())
     }
 
     @Test

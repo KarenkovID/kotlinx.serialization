@@ -6,6 +6,7 @@ package kotlinx.serialization.internal
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+import kotlinx.serialization.json.internal.*
 import kotlinx.serialization.modules.*
 import kotlin.math.*
 
@@ -16,7 +17,7 @@ internal const val MAX_SAFE_INTEGER: Double = 9007199254740991.toDouble() // 2^5
 
 internal class DynamicObjectParser(
     override val serializersModule: SerializersModule,
-    internal val configuration: JsonConfiguration
+    internal val configuration: JsonConf
 ) : SerialFormat {
     /**
      * Deserializes given [obj] from dynamic form to type [T] using [deserializer].

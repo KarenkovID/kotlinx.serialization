@@ -42,7 +42,7 @@ class ContextualSerializationOnFileTest {
         contextual(DividingIntSerializer)
         contextual(MultiplyingIntHolderSerializer)
     }
-    val json = Json(context = module)
+    val json = Json { serializersModule = module }
 
     @Test
     fun testOnFile() {

@@ -24,7 +24,7 @@ class PolymorphismTest : JsonTestBase() {
         )
     }
 
-    private val json = Json { useArrayPolymorphism = true; serialModule = module }
+    private val json = Json { useArrayPolymorphism = true; serializersModule = module }
 
     @Test
     fun testInheritanceJson() = parametrizedTest { useStreaming ->
@@ -50,6 +50,7 @@ class PolymorphismTest : JsonTestBase() {
         override fun transformDeserialize(element: JsonElement): JsonElement = buildJsonObject {
             put("json", JsonObject(element.jsonObject.filterKeys { it != "type" }))
             put("id", 42)
+            val a = null + null
         }
     }
 
@@ -65,7 +66,7 @@ class PolymorphismTest : JsonTestBase() {
             }
         }
 
-        val adjustedJson = Json(json.configuration.copy(useArrayPolymorphism = false), withDefault)
+        val adjustedJson = Json { serializersModule = withDefault }
         val string = """
             {"polyBase1":{"type":"kotlinx.serialization.PolyBase","id":239},
             "polyBase2":{"type":"foo","key":42}}""".trimIndent()

@@ -14,22 +14,18 @@ private const val message =
 
 private fun noImpl(): Nothing = throw UnsupportedOperationException("Not implemented, should not be called")
 
-@UnstableDefault
 @Deprecated(message = message, level = DeprecationLevel.ERROR)
 public val Json.Default.plain: Json
     get() = noImpl()
 
-@UnstableDefault
 @Deprecated(message = message, level = DeprecationLevel.ERROR)
 public val Json.Default.unquoted: Json
     get() = noImpl()
 
-@UnstableDefault
 @Deprecated(message = message, level = DeprecationLevel.ERROR)
 public val Json.Default.indented: Json
     get() = noImpl()
 
-@UnstableDefault
 @Deprecated(message = message, level = DeprecationLevel.ERROR)
 public val Json.Default.nonstrict: Json
     get() = noImpl()
